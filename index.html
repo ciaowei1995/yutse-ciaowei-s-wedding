@@ -2,7 +2,7 @@
 <html lang="zh-Hant"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>電子喜帖 — 序</title>
+<title>yutse &amp; ciaowei's wedding invitation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;600&amp;family=Noto+Sans+TC:wght@300;400;500&amp;family=Ma+Shan+Zheng&amp;family=Zhi+Mang+Xing&amp;family=Long+Cang&amp;family=Liu+Jian+Mao+Cao&amp;family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&amp;family=Playfair+Display:ital@0;1&amp;family=Dancing+Script&amp;family=Great+Vibes&amp;display=swap" rel="stylesheet">
@@ -233,7 +233,16 @@
     fade.classList.add('show'); setTimeout(()=>{ location.href=btn.getAttribute('href'); },900);
   });
   PA.fit=function(){ const f=(S().frame||'').split('x').map(Number); if(f.length!==2||!f[0]||!f[1]) return; const W=f[0],H=f[1], s=Math.min(innerWidth/W,innerHeight/H); stage.style.cssText='inset:auto;left:'+((innerWidth-W*s)/2)+'px;top:'+((innerHeight-H*s)/2)+'px;width:'+W+'px;height:'+H+'px;transform:scale('+s+');transform-origin:0 0;'; stage.style.setProperty('--inv',(1/s).toFixed(4)); };
-  PA.boot=function(){ PA.fit(); addEventListener('resize',()=>{ PA.fit(); if(PA.setBg) PA.setBg(PA.cur||0,0); }); const go=()=>{ btn.textContent=S().btnText; PA.play(0); }; if(bg.complete&&bg.naturalWidth) go(); else bg.addEventListener('load',go,{once:true}); };
+  PA.boot=function(){ PA.fit(); addEventListener('resize',()=>{ PA.fit(); if(PA.setBg) PA.setBg(PA.cur||0,0); });
+    const go=()=>{ btn.textContent=S().btnText; PA.play(0); };
+    let loaded=false,ok=false; const tryGo=()=>{ if(loaded&&ok) go(); };
+    if(bg.complete&&bg.naturalWidth) loaded=true; else bg.addEventListener('load',()=>{ loaded=true; tryGo(); },{once:true});
+    const st=document.createElement('style'); st.textContent='@keyframes paBlink{0%,100%{opacity:1}50%{opacity:.1}}#paIntro{position:fixed;inset:0;z-index:9999;background:transparent;display:flex;align-items:center;justify-content:center;transition:opacity .7s ease}#paIntro .box{display:flex;flex-direction:column;align-items:center;gap:26px;padding:34px 44px 30px;background:rgba(11,12,16,.5);border:1px solid rgba(243,234,217,.22);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}#paIntro .t{font:300 13px/1.6 "Noto Serif TC",serif;letter-spacing:.7em;margin-right:-.7em;color:#f3ead9;animation:paBlink 1.3s ease-in-out 3}#paIntro button{font:300 11px "Noto Serif TC",serif;letter-spacing:.5em;text-indent:.5em;color:rgba(243,234,217,.85);background:transparent;border:0;border-top:1px solid rgba(243,234,217,.3);padding:14px 22px 0;cursor:pointer;transition:color .3s}#paIntro button:hover{color:#fff}';
+    document.head.appendChild(st);
+    const ov=document.createElement('div'); ov.id='paIntro'; ov.innerHTML='<div class="box"><div class="t">影片即將開始！</div><button type="button">OK</button></div>';
+    document.body.appendChild(ov);
+    ov.querySelector('button').onclick=()=>{ ov.style.opacity='0'; setTimeout(()=>ov.remove(),650); ok=true; tryGo(); };
+  };
 })();
 </script>
 
