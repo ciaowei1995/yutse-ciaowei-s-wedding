@@ -239,10 +239,16 @@
   window.addEventListener('touchstart',e=>{ ty=e.touches[0].clientY; tu=false; },{passive:true});
   window.addEventListener('touchmove',e=>{ if(PA.inputOn&&freeMode&&ty!==null){ const y=e.touches[0].clientY; target=clamp100(target+(ty-y)/sc()/PA.range()*100); ty=y; return; } if(PA.inputOn&&state!=='free'&&ty!==null){ const y=e.touches[0].clientY; boost(Math.abs(ty-y)/120); ty=y; return; } if(!PA.inputOn||ty===null||tu) return; const dy=ty-e.touches[0].clientY; if(Math.abs(dy)>=24){ tu=true; if(state==='free') startGap(dy>0?1:-1); } },{passive:true});
   window.addEventListener('keydown',e=>{ if(!PA.inputOn) return; if(freeMode){ const st={ArrowDown:8,PageDown:30,' ':30,ArrowUp:-8,PageUp:-30}[e.key]; if(st){ e.preventDefault(); target=clamp100(target+st); } return; } if(['ArrowDown','PageDown',' '].includes(e.key)){ e.preventDefault(); startGap(1); } if(['ArrowUp','PageUp'].includes(e.key)){ e.preventDefault(); startGap(-1); } });
-  $('#skipLink').addEventListener('click',e=>{ e.preventDefault(); if(!PA.inputOn) return; fade.classList.add('show'); if(PA.fadeMusic) PA.fadeMusic(); setTimeout(()=>{ location.href=$('#skipLink').getAttribute('href'); },900); });
+  function goB(href){ if(PA._going) return; PA._going=true; const t0=Date.now(); fade.classList.add('show');
+    const f=document.createElement('iframe'); f.id='pbFrame'; f.setAttribute('allow','autoplay'); f.style.cssText='position:fixed;inset:0;width:100%;height:100%;border:0;z-index:90;background:#987055;'; f.src=href;
+    let shown=false; const reveal=()=>{ if(shown) return; shown=true; fade.classList.remove('show'); setTimeout(()=>{ try{ PA.stop(); }catch(e){} stage.style.display='none'; },1000); };
+    f.addEventListener('load',()=>setTimeout(reveal,Math.max(0,950-(Date.now()-t0)))); setTimeout(reveal,9000);
+    f.addEventListener('error',()=>{ location.href=href; });
+    document.body.appendChild(f); }
+  $('#skipLink').addEventListener('click',e=>{ e.preventDefault(); if(!PA.inputOn) return; goB($('#skipLink').getAttribute('href')); });
   btn.addEventListener('click',e=>{
     e.preventDefault(); if(!PA.inputOn) return;
-    fade.classList.add('show'); setTimeout(()=>{ location.href=btn.getAttribute('href'); },900);
+    goB(btn.getAttribute('href'));
   });
   PA.fit=function(){ const f=(S().frame||'').split('x').map(Number); if(f.length!==2||!f[0]||!f[1]) return; const W=f[0],H=f[1], s=Math.min(innerWidth/W,innerHeight/H); stage.style.cssText='inset:auto;left:'+((innerWidth-W*s)/2)+'px;top:'+((innerHeight-H*s)/2)+'px;width:'+W+'px;height:'+H+'px;transform:scale('+s+');transform-origin:0 0;'; stage.style.setProperty('--inv',(1/s).toFixed(4)); };
   PA.boot=function(){ PA.fit(); addEventListener('resize',()=>{ PA.fit(); if(PA.setBg) PA.setBg(PA.cur||0,0); });
@@ -259,6 +265,8 @@
     const saveState=()=>{ try{ localStorage.setItem(K,JSON.stringify({on:musicOn&&au&&!au.paused&&!au.ended?1:0,t:au?au.currentTime:0,ts:Date.now()})); }catch(e){} };
     const startMusic=()=>{ try{ wantMusic=true; au=new Audio('first-light.mp3'); au.preload='auto'; au.loop=false; au.volume=0; const p=au.play(); if(p&&p.catch) p.catch(()=>{}); setInterval(saveState,400); addEventListener('pagehide',saveState); }catch(e){} };
     const riseMusic=()=>{ if(!wantMusic||!au) return; try{ au.currentTime=0; musicOn=true; au.play().catch(()=>{}); let v=0; const iv=setInterval(()=>{ v=Math.min(1,v+0.05); au.volume=v; if(v>=1) clearInterval(iv); },60); }catch(e){} };
+    window.addEventListener('message',e=>{ const d=e.data||{}; if(d.pa==='stopMusic'&&PA.fadeMusic) PA.fadeMusic();
+      if(d.pa==='back'){ const f=document.getElementById('pbFrame'); fade.classList.add('show'); setTimeout(()=>{ if(f) f.remove(); stage.style.display=''; PA._going=false; try{ PA.fit(); PA.play(0); }catch(x){} fade.classList.remove('show'); },950); } });
     PA.fadeMusic=()=>{ if(!au) return; musicOn=false; try{ localStorage.setItem(K,JSON.stringify({on:0,t:0,ts:Date.now()})); }catch(e){} const v0=au.volume; let k=0; const iv=setInterval(()=>{ k++; au.volume=Math.max(0,v0*(1-k/12)); if(k>=12){ clearInterval(iv); au.pause(); } },70); };
     window._paRise=()=>{ let d=7; const t0=Date.now(); let q=null; try{ q=new URLSearchParams(location.search).get('md'); }catch(e){}
       const fire=()=>{ if(q!==null&&q!==''&&!isNaN(+q)) d=+q; try{ parent.postMessage({pa:'go',d:d},'*'); }catch(e){}
