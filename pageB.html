@@ -526,6 +526,15 @@
   .field input[type="text"]:focus, .field input[type="email"]:focus, .field input[type="number"]:focus, .field select:focus, .field textarea:focus{
     outline:none; border-bottom-color:var(--gold);
   }
+  /* 輸入文字或瀏覽器自動填入後，不要出現反白底色，維持原本的透明底與米白字 */
+  .field input:-webkit-autofill, .field input:-webkit-autofill:hover, .field input:-webkit-autofill:focus,
+  .field textarea:-webkit-autofill, .field select:-webkit-autofill{
+    -webkit-text-fill-color:var(--ink) !important; caret-color:var(--ink);
+    -webkit-box-shadow:0 0 0 1000px transparent inset !important; box-shadow:0 0 0 1000px transparent inset !important;
+    transition:background-color 99999s ease-in-out 0s !important;
+  }
+  .field input, .field textarea, .field select{ background-color:transparent !important; -webkit-tap-highlight-color:transparent; }
+  .field input::selection, .field textarea::selection{ background:rgba(201,160,106,.35); color:inherit; }
   .field select option{ color:#000; }
   .field textarea{ resize:vertical; min-height:96px; border:1px solid rgba(240,230,212,.4) !important; border-radius:4px; padding:10px 12px !important; }
   .radio-row{ display:flex; gap:26px; flex-wrap:wrap; }
