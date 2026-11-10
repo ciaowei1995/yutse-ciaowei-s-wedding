@@ -1360,5 +1360,29 @@
   var cp=$('btnCopy'); if(cp) cp.addEventListener('click',function(){ setTimeout(function(){ var b=$('exportBox'); b.value+='\n/* ---- 名字字樣（葉禹澤・陳巧為）---- */\n'+JSON.stringify(cfg)+'\n'; b.select(); if(navigator.clipboard) navigator.clipboard.writeText(b.value).catch(function(){}); },0); });
 })();
 </script>
+<script>
+/* 背景音樂：接續 pageA 的播放位置；若瀏覽器擋住自動播放，第一次觸碰/捲動時再接續 */
+(function(){
+  var K='bgm_state',st=null;
+  try{ st=JSON.parse(localStorage.getItem(K)||'null'); }catch(e){}
+  if(!st||!st.on||Date.now()-st.ts>30000) return;
+  var au=new Audio('first-light.mp3'); au.preload='auto'; au.loop=false;
+  var pending=true, base=st.t, since=st.ts;
+  function pos(){ return pending ? base+(Date.now()-since)/1000 : au.currentTime; }
+  function save(){ try{ localStorage.setItem(K,JSON.stringify({on:(pending||(!au.paused&&!au.ended))?1:0,t:pos(),ts:Date.now()})); }catch(e){} }
+  function seekAndPlay(){
+    var t=pos();
+    var go=function(){ try{ if(isFinite(au.duration)&&t>=au.duration-0.5){ pending=false; return; } au.currentTime=t; }catch(e){}
+      var p=au.play(); if(p&&p.then){ p.then(function(){ pending=false; off(); }).catch(function(){}); } else { pending=false; off(); } };
+    if(au.readyState>=1) go(); else au.addEventListener('loadedmetadata',go,{once:true});
+  }
+  var evs=['pointerdown','touchstart','keydown','wheel','scroll'];
+  function onInteract(){ if(pending) seekAndPlay(); }
+  function off(){ evs.forEach(function(n){ removeEventListener(n,onInteract,true); }); }
+  evs.forEach(function(n){ addEventListener(n,onInteract,{capture:true,passive:true}); });
+  seekAndPlay();
+  setInterval(save,400); addEventListener('pagehide',save);
+})();
+</script>
 </body>
 </html>
