@@ -263,8 +263,8 @@
     // 背景音樂：按下圖示（使用者操作）時先靜音啟動以解除瀏覽器限制，畫面開始 1.5 秒後再從頭淡入播放；不循環
     const K='bgm_state'; let au=null, wantMusic=false, musicOn=false;
     const saveState=()=>{ try{ localStorage.setItem(K,JSON.stringify({on:musicOn&&au&&!au.paused&&!au.ended?1:0,t:au?au.currentTime:0,ts:Date.now()})); }catch(e){} };
-    const startMusic=()=>{ try{ wantMusic=true; au=new Audio('first-light.mp3'); au.preload='auto'; au.loop=false; au.volume=0; const p=au.play(); if(p&&p.catch) p.catch(()=>{}); setInterval(saveState,400); addEventListener('pagehide',saveState); }catch(e){} };
-    const riseMusic=()=>{ if(!wantMusic||!au) return; try{ au.currentTime=0; musicOn=true; au.play().catch(()=>{}); let v=0; const iv=setInterval(()=>{ v=Math.min(1,v+0.05); au.volume=v; if(v>=1) clearInterval(iv); },60); }catch(e){} };
+    const startMusic=()=>{ try{ wantMusic=true; au=new Audio('first-light.mp3'); au.preload='auto'; au.loop=false; au.volume=0; au.muted=true; const p=au.play(); if(p&&p.catch) p.catch(()=>{}); setInterval(saveState,400); addEventListener('pagehide',saveState); }catch(e){} };
+    const riseMusic=()=>{ if(!wantMusic||!au) return; try{ au.currentTime=0; au.muted=false; musicOn=true; au.play().catch(()=>{}); let v=0; const iv=setInterval(()=>{ v=Math.min(1,v+0.05); au.volume=v; if(v>=1) clearInterval(iv); },60); }catch(e){} };
     window.addEventListener('message',e=>{ const d=e.data||{}; if(d.pa==='stopMusic'&&PA.fadeMusic) PA.fadeMusic();
       if(d.pa==='back'){ const f=document.getElementById('pbFrame'); fade.classList.add('show'); setTimeout(()=>{ if(f) f.remove(); stage.style.display=''; PA._going=false; try{ PA.fit(); PA.play(0); }catch(x){} fade.classList.remove('show'); },950); } });
     PA.fadeMusic=()=>{ if(!au) return; musicOn=false; try{ localStorage.setItem(K,JSON.stringify({on:0,t:0,ts:Date.now()})); }catch(e){} const v0=au.volume; let k=0; const iv=setInterval(()=>{ k++; au.volume=Math.max(0,v0*(1-k/12)); if(k>=12){ clearInterval(iv); au.pause(); } },70); };
