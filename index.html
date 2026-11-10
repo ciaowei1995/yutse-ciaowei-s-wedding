@@ -260,7 +260,7 @@
     const startMusic=()=>{ try{ wantMusic=true; au=new Audio('first-light.mp3'); au.preload='auto'; au.loop=false; au.volume=0; const p=au.play(); if(p&&p.catch) p.catch(()=>{}); setInterval(saveState,400); addEventListener('pagehide',saveState); }catch(e){} };
     const riseMusic=()=>{ if(!wantMusic||!au) return; try{ au.currentTime=0; musicOn=true; au.play().catch(()=>{}); let v=0; const iv=setInterval(()=>{ v=Math.min(1,v+0.05); au.volume=v; if(v>=1) clearInterval(iv); },60); }catch(e){} };
     PA.fadeMusic=()=>{ if(!au) return; musicOn=false; try{ localStorage.setItem(K,JSON.stringify({on:0,t:0,ts:Date.now()})); }catch(e){} const v0=au.volume; let k=0; const iv=setInterval(()=>{ k++; au.volume=Math.max(0,v0*(1-k/12)); if(k>=12){ clearInterval(iv); au.pause(); } },70); };
-    window._paRise=()=>setTimeout(riseMusic,2000);
+    window._paRise=()=>setTimeout(riseMusic,5000);
     ov.querySelectorAll('button').forEach(b=>{ b.onclick=()=>{ if(b.dataset.m==='on') startMusic(); else saveState(); ov.style.opacity='0'; setTimeout(()=>ov.remove(),650); ok=true; tryGo(); }; });
   };
 })();
